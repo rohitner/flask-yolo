@@ -2,8 +2,9 @@ import os
 from flask import Flask, request, redirect, url_for, send_from_directory, render_template
 from darkflow.net.build import TFNet
 import cv2
+import base64
 
-UPLOAD_FOLDER = '/home/rohitner'
+UPLOAD_FOLDER = 'static'
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
 
 app = Flask(__name__)
@@ -34,7 +35,10 @@ def upload_file():
                 cv2.putText(imgcv, result["label"], (text_x, text_y), cv2.FONT_HERSHEY_SIMPLEX,
                             0.8, (0, 255, 0), 2, cv2.LINE_AA)
             cv2.imwrite(os.path.join(app.config['UPLOAD_FOLDER'], filename), imgcv)
-            return redirect(url_for('send_file', filename=filename))
+            # return redirect(url_for('send_file', filename=filename))
+            # ret, frame_buff = cv2.imencode('.jpg', imgcv)
+            # frame_b64 = base64.b64encode(frame_buff)
+            return redirect(url_for('show_video',filename=filename))
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -44,6 +48,10 @@ def upload_file():
          <input type=submit value=Upload>
     </form>
     '''
+
+@app.route('/video/<filename>')
+def show_video(filename):
+    return render_template('webcam.html', fl=filename)
 
 @app.route('/uploads/<filename>')
 def send_file(filename):
